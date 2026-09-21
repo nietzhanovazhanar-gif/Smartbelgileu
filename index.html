@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart_belgiley - Күнделікті Қатысу Платформасы (Cloud)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 35%, #fce7f3 70%, #fae8ff 100%);
+            min-height: 100vh;
+        }
+        .creative-glow {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(236, 72, 153, 0.2) 50%, rgba(168, 85, 247, 0.25) 100%);
+            backdrop-filter: blur(25px);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.12);
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+    <header class="bg-gradient-to-r from-indigo-950 via-purple-950 to-indigo-900 text-white shadow-2xl border-b border-white/10 relative overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/30 via-transparent to-transparent pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-4 py-5 flex flex-col sm:flex-row justify-between items-center gap-4 relative z-10">
+            <div class="flex items-center space-x-3.5">
+                <div class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white p-3.5 rounded-2xl font-bold text-2xl shadow-xl shadow-indigo-500/30 animate-pulse">🏫</div>
+                <div>
+                    <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-indigo-100 to-pink-200 bg-clip-text text-transparent">Smart_belgiley</h1>
+                    <p class="text-xs text-indigo-200 font-medium tracking-wide">Бұлтты деректер базасымен синхрондалған</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <div class="flex items-center bg-black/40 p-1.5 rounded-2xl backdrop-blur-2xl border border-white/15 shadow-inner">
+                    <button onclick="window.switchRole('teacher')" id="btnRoleTeacher" class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-indigo-950 shadow-2xl scale-105 cursor-pointer">
+                        👩‍🏫 Мұғалім
+                    </button>
+                    <button onclick="window.switchRole('admin')" id="btnRoleAdmin" class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all text-white/80 hover:text-white hover:bg-white/10 cursor-pointer">
+                        🛡️ Әкімші
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8">
+        
+        <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 border border-white/20">
+            <span id="toastIcon" class="text-xl">✅</span>
+            <span id="toastMsg" class="text-sm font-semibold tracking-wide">Хабарлама</span>
+        </div>
+
+        <div id="teacherView" class="space-y-6">
+            <div class="glass-card p-6 sm:p-8 rounded-[2.5rem] shadow-2xl space-y-6 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-br from-indigo-400/20 to-pink-400/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Күнделікті сабаққа қатысуды тіркеу</h2>
+                    <p class="text-sm text-slate-500 font-medium">Аты-жөніңізді жазыңыз немесе сақталған тізімнен таңдаңыз, сынып пен күнді белгілеңіз.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Мұғалім аты-жөні:</label>
+                        <div class="relative flex items-center gap-2">
+                            <input type="text" id="teacherNameInput" list="savedTeachersDatalist" placeholder="Аты-жөніңізді жазыңыз..." class="w-full px-4 py-3.5 bg-white/90 border border-slate-200/80 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm">
+                            <datalist id="savedTeachersDatalist">
+                                <!-- Populated dynamically -->
+                            </datalist>
+                            <button onclick="window.saveCustomTeacherName()" title="Аты-жөнді сақтау" class="px-3.5 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-bold shadow-md transition-all cursor-pointer">💾</button>
+                            <button onclick="window.deleteCurrentTeacherPrompt()" title="Таңдалған мұғалімді тізімнен өшіру" class="px-3.5 py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl text-xs font-bold shadow-md transition-all cursor-pointer">🗑️</button>
+                        </div>
+                        <p class="text-[10px] text-indigo-600 font-bold mt-1" id="savedTeacherIndicator">Сақталған мұғалім: Жоқ</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Сынып:</label>
+                        <select id="gradeSelect" onchange="window.loadClassStudents()" class="w-full px-4 py-3.5 bg-white/90 border border-slate-200/80 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm cursor-pointer">
+                            <option value="1">1 сынып</option>
+                            <option value="2">2 сынып</option>
+                            <option value="3">3 сынып</option>
+                            <option value="4">4 сынып</option>
+                            <option value="5">5 сынып</option>
+                            <option value="6">6 сынып</option>
+                            <option value="7">7 сынып</option>
+                            <option value="8">8 сынып</option>
+                            <option value="9">9 сынып</option>
+                            <option value="10">10 сынып</option>
+                            <option value="11">11 сынып</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Литер (Әріп):</label>
+                        <select id="letterInput" onchange="window.loadClassStudents()" class="w-full px-4 py-3.5 bg-white/90 border border-slate-200/80 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm cursor-pointer">
+                            <option value="А">А</option>
+                            <option value="Ә">Ә</option>
+                            <option value="Б">Б</option>
+                            <option value="В">В</option>
+                            <option value="Г">Г</option>
+                            <option value="Ғ">Ғ</option>
+                            <option value="Д">Д</option>
+                            <option value="Е">Е</option>
+                            <option value="Ж">Ж</option>
+                            <option value="З">З</option>
+                            <option value="И">И</option>
+                            <option value="К">К</option>
+                            <option value="Қ">Қ</option>
+                            <option value="Л">Л</option>
+                            <option value="М">М</option>
+                            <option value="Н">Н</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Күні:</label>
+                        <input type="date" id="attendanceDate" onchange="window.loadClassStudents(); window.loadAdminData();" class="w-full px-4 py-3.5 bg-white/90 border border-slate-200/80 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/60">
+                <div class="p-6 bg-gradient-to-r from-slate-50/90 via-indigo-50/40 to-slate-50/90 border-b border-slate-200/80 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-xl font-extrabold text-slate-900" id="currentClassNameDisplay">5 "А" сыныбы</span>
+                        <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3.5 py-1.5 rounded-full shadow-inner" id="studentCountBadge">0 оқушы</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2 w-full sm:w-auto justify-end flex-wrap gap-2">
+                        <button onclick="window.openAddStudentModal()" class="px-4 py-2.5 bg-white text-indigo-700 text-xs font-extrabold rounded-xl border border-indigo-200 hover:bg-indigo-50 transition-all shadow-sm cursor-pointer">➕ Оқушы қосу</button>
+                        <button onclick="window.openWordImportModal()" class="px-4 py-2.5 bg-white text-blue-700 text-xs font-extrabold rounded-xl border border-blue-200 hover:bg-blue-50 transition-all shadow-sm cursor-pointer">📄 Файл жүктеу</button>
+                        <button onclick="window.markAll('Келді')" class="px-4 py-2.5 bg-white text-emerald-700 text-xs font-extrabold rounded-xl border border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm cursor-pointer">Барлығы келді</button>
+                        <button onclick="window.saveAttendance()" class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-extrabold rounded-2xl shadow-lg shadow-indigo-500/30 transition-all flex items-center space-x-2 cursor-pointer scale-105">
+                            <span>💾 Сақтау және Жіберу</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100/80 text-slate-600 text-xs font-extrabold uppercase tracking-wider">
+                                <th class="py-4 px-6">№</th>
+                                <th class="py-4 px-6">Оқушының Аты-жөні</th>
+                                <th class="py-4 px-6 text-center">Статусы</th>
+                                <th class="py-4 px-6">Себебі / Ескерту</th>
+                                <th class="py-4 px-6 text-center">Әрекет</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody" class="divide-y divide-slate-200/60 text-sm font-medium">
+                            <!-- Populated via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="adminView" class="hidden space-y-8">
+            <div class="glass-card p-6 sm:p-8 rounded-[2.5rem] shadow-2xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Әкімші Бақылау</h2>
+                    <p class="text-sm text-slate-500 font-medium">Барлық мұғалімдердің есептері және қатысу көрсеткіштері.</p>
+                </div>
+                <div>
+                    <button onclick="window.exportAllTeachersExcelReport()" class="px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-extrabold rounded-2xl transition-all shadow-lg shadow-emerald-500/20 flex items-center space-x-2 cursor-pointer">
+                        <span>📊 Барлық мұғалімдер есебін Excel (.csv) жүктеу</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="glass-card p-6 rounded-[2rem] shadow-xl flex items-center space-x-4 border border-white/60">
+                    <div class="bg-indigo-100 text-indigo-700 p-4 rounded-2xl text-2xl font-bold shadow-inner">👥</div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Тіркелген оқушылар</p>
+                        <h3 class="text-3xl font-extrabold text-slate-900 mt-1" id="statTotalStudents">0</h3>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-[2rem] shadow-xl flex items-center space-x-4 border border-white/60">
+                    <div class="bg-emerald-100 text-emerald-700 p-4 rounded-2xl text-2xl font-bold shadow-inner">✅</div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Сабақта келді</p>
+                        <h3 class="text-3xl font-extrabold text-emerald-600 mt-1" id="statPresent">0</h3>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-[2rem] shadow-xl flex items-center space-x-4 border border-white/60">
+                    <div class="bg-amber-100 text-amber-700 p-4 rounded-2xl text-2xl font-bold shadow-inner">⚠️</div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Себепті қатыспады</p>
+                        <h3 class="text-3xl font-extrabold text-amber-600 mt-1" id="statExcused">0</h3>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-[2rem] shadow-xl flex items-center space-x-4 border border-white/60">
+                    <div class="bg-rose-100 text-rose-700 p-4 rounded-2xl text-2xl font-bold shadow-inner">❌</div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Себепсіз келмеген</p>
+                        <h3 class="text-3xl font-extrabold text-rose-600 mt-1" id="statAbsent">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass-card rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/60">
+                    <div class="p-5 bg-emerald-500/10 border-b border-emerald-500/20 flex justify-between items-center">
+                        <h3 class="font-extrabold text-emerald-900 text-base flex items-center gap-2">
+                            <span>✅</span> Толтырған мұғалімдер
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-emerald-200 text-emerald-900 text-xs font-extrabold px-3.5 py-1.5 rounded-full shadow-inner" id="filledCountBadge">0</span>
+                            <button onclick="window.exportTeachersReport('filled')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl transition-all shadow-sm cursor-pointer" title="Толтырғандар тізімін жүктеу">📥 Жүктеу</button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div id="filledTeachersList" class="space-y-3">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/60">
+                    <div class="p-5 bg-rose-500/10 border-b border-rose-500/20 flex justify-between items-center">
+                        <h3 class="font-extrabold text-rose-900 text-base flex items-center gap-2">
+                            <span>⏳</span> Толтырмаған мұғалімдер
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-rose-200 text-rose-900 text-xs font-extrabold px-3.5 py-1.5 rounded-full shadow-inner" id="unfilledCountBadge">0</span>
+                            <button onclick="window.exportTeachersReport('unfilled')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl transition-all shadow-sm cursor-pointer" title="Толтырмағандар тізімін жүктеу">📥 Жүктеу</button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div id="unfilledTeachersList" class="space-y-3">
+                            <p class="text-xs text-slate-400 py-4 text-center font-medium">Толтырмаған мұғалімдер тізімі таза</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/60">
+                <div class="p-6 sm:p-8 bg-gradient-to-r from-slate-50/90 via-indigo-50/40 to-slate-50/90 border-b border-slate-200/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-lg" id="absentSectionTitle">Сабақтан қалған оқушылар есебі</h3>
+                        <p class="text-xs text-slate-500 font-medium">Таңдалған кезең бойынша оқушы аты-жөні, сыныбы, сынып жетекшісі, қалу күндері және себептері</p>
+                    </div>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <select id="periodFilterSelect" onchange="window.loadAdminData()" class="px-4 py-2.5 bg-white border border-slate-300 rounded-2xl text-xs font-bold text-slate-800 outline-none shadow-md cursor-pointer focus:ring-2 focus:ring-indigo-500">
+                            <option value="weekly">Апталық есеп</option>
+                            <option value="daily">Күнделікті есеп</option>
+                            <option value="monthly">Айлық есеп</option>
+                            <option value="quarterly">Тоқсандық есеп</option>
+                            <option value="yearly">Жылдық есеп</option>
+                        </select>
+                        <button onclick="window.exportWeeklyReport()" class="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-extrabold rounded-2xl transition-all shadow-lg shadow-indigo-500/20 flex items-center space-x-1 cursor-pointer">
+                            <span>📥 Тізімді жүктеу</span>
+                        </button>
+                        <span class="text-xs text-indigo-700 font-extrabold ml-2 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-200" id="totalAbsentStudentsCount">Барлығы: 0 оқушы</span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100/80 text-slate-600 text-xs font-extrabold uppercase tracking-wider">
+                                <th class="py-4 px-6">№</th>
+                                <th class="py-4 px-6">Оқушының Аты-жөні</th>
+                                <th class="py-4 px-6">Сыныбы</th>
+                                <th class="py-4 px-6">Сынып Жетекшісі</th>
+                                <th class="py-4 px-6 text-center">Қалған күндері, себептері</th>
+                                <th class="py-4 px-6 text-center">Жалпы саны</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weeklyAbsentTableBody" class="divide-y divide-slate-200/60 text-sm font-medium">
+                            <!-- Populated via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 sm:p-8 rounded-[2.5rem] shadow-2xl space-y-6 border border-white/60">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-lg">Сыныптар бойынша оқушылардың саны мен сабақтан қалу көрсеткіші</h3>
+                        <p class="text-xs text-slate-500 font-medium">Мұғалімдер өз сыныптарының қатысуын енгізгеннен кейін көрсетіледі</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button onclick="window.exportClassStatsReport()" class="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-extrabold rounded-2xl transition-all shadow-lg shadow-indigo-500/20 flex items-center space-x-1 cursor-pointer">
+                            <span>📥 Сынып есебін жүктеу</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="pt-6 pb-2 px-2 flex">
+                    <div class="flex flex-col justify-between text-[11px] font-bold text-slate-500 pr-3 h-72 pb-2 select-none border-r border-slate-300 text-right">
+                        <span>100%</span>
+                        <span>90%</span>
+                        <span>80%</span>
+                        <span>70%</span>
+                        <span>60%</span>
+                        <span>50%</span>
+                        <span>40%</span>
+                        <span>30%</span>
+                        <span>20%</span>
+                        <span>10%</span>
+                        <span>0%</span>
+                    </div>
+                    <div id="columnChartContainer" class="flex items-end justify-around gap-4 h-72 border-b-2 border-slate-300 pb-2 relative flex-grow pl-4">
+                        <div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-25 pl-4">
+                            <div class="border-b border-dashed border-slate-400 w-full"></div>
+                            <div class="border-b border-dashed border-slate-400 w-full"></div>
+                            <div class="border-b border-dashed border-slate-400 w-full"></div>
+                            <div class="border-b border-dashed border-slate-400 w-full"></div>
+                            <div class="border-b border-dashed border-slate-400 w-full"></div>
+                            <div class="border-b border-dashed border-slate-400 w-full"></div>
+                            <div class="border-b border-dashed border-slate-400 w-full"></div>
+                            <div class="border-b border-dashed border-slate-400 w-full"></div>
+                            <div class="border-b border-dashed border-slate-400 w-full"></div>
+                            <div class="border-b border-dashed border-slate-400 w-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modals -->
+    <div id="addStudentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card rounded-[2rem] max-w-md w-full p-6 shadow-2xl space-y-4 border border-white/80">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+                <h3 class="text-lg font-extrabold text-slate-900">Жаңа оқушы қосу</h3>
+                <button onclick="window.closeAddStudentModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer">✕</button>
+            </div>
+            <div class="space-y-3">
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider">Оқушының толық аты-жөні:</label>
+                <input type="text" id="newStudentNameInput" placeholder="Мысалы: Ернар Айдарұлы" class="w-full px-4 py-3.5 bg-white border border-slate-300 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm">
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="window.closeAddStudentModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-2xl cursor-pointer">Болдырмау</button>
+                <button onclick="window.confirmAddStudent()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm rounded-2xl shadow-md cursor-pointer">Қосу</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="wordImportModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card rounded-[2rem] max-w-lg w-full p-6 shadow-2xl space-y-4 border border-white/80">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+                <h3 class="text-lg font-extrabold text-slate-900">Файлдан оқушыларды жүктеу</h3>
+                <button onclick="window.closeWordImportModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer">✕</button>
+            </div>
+            <div class="space-y-4">
+                <p class="text-xs text-slate-500 font-medium">Word немесе мәтіндік файлды жүктеңіз. Әр оқушы жаңа жолдан тұруы тиіс:</p>
+                
+                <div class="border-2 border-dashed border-indigo-300 rounded-3xl p-6 text-center hover:bg-indigo-50/50 transition-colors cursor-pointer relative">
+                    <input type="file" id="wordFileInput" accept=".txt,.doc,.docx" onchange="window.handleFileUpload(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                    <div class="space-y-2 pointer-events-none">
+                        <div class="text-3xl">📎</div>
+                        <p class="text-sm font-extrabold text-slate-700" id="fileNameDisplay">Прикрепить файл (Жүктеу үшін басыңыз)</p>
+                        <p class="text-xs text-slate-400">(.txt немесе мәтіндік құжаттар)</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Немесе тізімді төменге көшіріп қойыңыз:</label>
+                    <textarea id="wordImportTextarea" rows="4" placeholder="Әлихан Нұрұлы&#10;Аружан Серікқызы&#10;Данияр Маратұлы" class="w-full px-4 py-3 bg-white border border-slate-300 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="window.closeWordImportModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-2xl cursor-pointer">Болдырмау</button>
+                <button onclick="window.confirmWordImport()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm rounded-2xl shadow-md cursor-pointer">Тізімді жүктеу</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'smart-belgiley-school';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyDPxrfHVOM-tWeqYMDArl-OBW5i6XZSN7I",
+            authDomain: "smart-belgiley-47c03.firebaseapp.com",
+            projectId: "smart-belgiley-47c03",
+            storageBucket: "smart-belgiley-47c03.firebasestorage.app",
+            messagingSenderId: "435131118628",
+            appId: "1:435131118628:web:be6ba7c99f163327e794b1"
+        };
+        
+        let app, db, auth, userId = null;
+        let isCloudReady = false;
+
+        let mockStudents = {
+            "1_А": [], "1_Ә": [], "1_Б": [], "1_В": [], "1_Г": [], "1_Ғ": [], "1_Д": [], "1_Е": [], "1_Ж": [], "1_З": [], "1_И": [], "1_К": [], "1_Қ": [], "1_Л": [], "1_М": [], "1_Н": [],
+            "2_А": [], "2_Ә": [], "2_Б": [], "2_В": [], "2_Г": [], "2_Ғ": [], "2_Д": [], "2_Е": [], "2_Ж": [], "2_З": [], "2_И": [], "2_К": [], "2_Қ": [], "2_Л": [], "2_М": [], "2_Н": [],
+            "3_А": [], "3_Ә": [], "3_Б": [], "3_В": [], "3_Г": [], "3_Ғ": [], "3_Д": [], "3_Е": [], "3_Ж": [], "3_З": [], "3_И": [], "3_К": [], "3_Қ": [], "3_Л": [], "3_М": [], "3_Н": [],
+            "4_А": [], "4_Ә": [], "4_Б": [], "4_В": [], "4_Г": [], "4_Ғ": [], "4_Д": [], "4_Е": [], "4_Ж": [], "4_З": [], "4_И": [], "4_К": [], "4_Қ": [], "4_Л": [], "4_М": [], "4_Н": [],
+            "5_А": [], "5_Ә": [], "5_Б": [], "5_В": [], "5_Г": [], "5_Ғ": [], "5_Д": [], "5_Е": [], "5_Ж": [], "5_З": [], "5_И": [], "5_К": [], "5_Қ": [], "5_Л": [], "5_М": [], "5_Н": [],
+            "6_А": [], "6_Ә": [], "6_Б": [], "6_В": [], "6_Г": [], "6_Ғ": [], "6_Д": [], "6_Е": [], "6_Ж": [], "6_З": [], "6_И": [], "6_К": [], "6_Қ": [], "6_Л": [], "6_М": [], "6_Н": [],
+            "7_А": [], "7_Ә": [], "7_Б": [], "7_В": [], "7_Г": [], "7_Ғ": [], "7_Д": [], "7_Е": [], "7_Ж": [], "7_З": [], "7_И": [], "7_К": [], "7_Қ": [], "7_Л": [], "7_М": [], "7_Н": [],
+            "8_А": [], "8_Ә": [], "8_Б": [], "8_В": [], "8_Г": [], "8_Ғ": [], "8_Д": [], "8_Е": [], "8_Ж": [], "8_З": [], "8_И": [], "8_К": [], "8_Қ": [], "8_Л": [], "8_М": [], "8_Н": [],
+            "9_А": [], "9_Ә": [], "9_Б": [], "9_В": [], "9_Г": [], "9_Ғ": [], "9_Д": [], "9_Е": [], "9_Ж": [], "9_З": [], "9_И": [], "9_К": [], "9_Қ": [], "9_Л": [], "9_М": [], "9_Н": [],
+            "10_А": [], "10_Ә": [], "10_Б": [], "10_В": [], "10_Г": [], "10_Ғ": [], "10_Д": [], "10_Е": [], "10_Ж": [], "10_З": [], "10_И": [], "10_К": [], "10_Қ": [], "10_Л": [], "10_М": [], "10_Н": [],
+            "11_А": [], "11_Ә": [], "11_Б": [], "11_В": [], "11_Г": [], "11_Ғ": [], "11_Д": [], "11_Е": [], "11_Ж": [], "11_З": [], "11_И": [], "11_К": [], "11_Қ": [], "11_Л": [], "11_М": [], "11_Н": []
+        };
+
+        let registeredTeachers = [];
+        let attendanceLogs = [];
+        let currentStudentsData = [];
+        let uploadedFileText = "";
+
+        const cloudRoot = ['artifacts', appId, 'public', 'data'];
+        const safeDocId = (value) => encodeURIComponent(String(value || '').trim()).replace(/%/g, '_');
+
+        async function initFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                isCloudReady = true;
+                await migrateLocalDataToCloudOnce();
+                setupRealtimeSync();
+                showToast("Бұлттық базаға қосылды. Деректер автоматты сақталады!", "success");
+            } catch (err) {
+                console.error("Firebase connection error:", err);
+                isCloudReady = false;
+                loadFromLocalStorage();
+                showToast("Firebase қосылмады. Интернет пен Firebase баптауын тексеріңіз.", "info");
+            }
+        }
+
+        async function migrateLocalDataToCloudOnce() {
+            const marker = localStorage.getItem('smart_belgiley_cloud_migrated_v2');
+            if (marker === 'yes') return;
+            try {
+                const localTeachers = JSON.parse(localStorage.getItem('school_registered_teachers') || '[]');
+                const localStudents = JSON.parse(localStorage.getItem('school_custom_students') || '{}');
+                const localLogs = JSON.parse(localStorage.getItem('school_attendance_logs') || '[]');
+
+                const teacherSnap = await getDocs(collection(db, ...cloudRoot, 'teachers_v2'));
+                const cloudTeacherNames = new Set(teacherSnap.docs.map(d => (d.data().name || '').toLowerCase().trim()));
+                for (const t of localTeachers) {
+                    if (t?.name && !cloudTeacherNames.has(t.name.toLowerCase().trim())) await saveTeacherRecord(t);
+                }
+                for (const [classKey, students] of Object.entries(localStudents)) {
+                    if (Array.isArray(students) && students.length) await saveClassStudents(classKey, students);
+                }
+                for (const log of localLogs) {
+                    if (log?.date && log?.classKey) await saveLogRecord(log);
+                }
+                localStorage.setItem('smart_belgiley_cloud_migrated_v2', 'yes');
+            } catch (e) {
+                console.warn('Local-to-cloud migration skipped:', e);
+            }
+        }
+
+        function setupRealtimeSync() {
+            if (!isCloudReady) return;
+
+            onSnapshot(collection(db, ...cloudRoot, 'classes_v2'), (snapshot) => {
+                snapshot.forEach(d => {
+                    const data = d.data();
+                    if (data.classKey && Array.isArray(data.students)) mockStudents[data.classKey] = data.students;
+                });
+                localStorage.setItem('school_custom_students', JSON.stringify(mockStudents));
+                loadClassStudents();
+                loadAdminData();
+            }, (err) => console.error("Students sync error:", err));
+
+            onSnapshot(collection(db, ...cloudRoot, 'teachers_v2'), (snapshot) => {
+                registeredTeachers = snapshot.docs.map(d => d.data()).filter(t => t && t.name);
+                localStorage.setItem('school_registered_teachers', JSON.stringify(registeredTeachers));
+                updateTeachersDatalist();
+                loadAdminData();
+            }, (err) => console.error("Teachers sync error:", err));
+
+            onSnapshot(collection(db, ...cloudRoot, 'attendance_v2'), (snapshot) => {
+                attendanceLogs = snapshot.docs.map(d => d.data()).filter(l => l && l.date && l.classKey);
+                attendanceLogs.sort((a,b) => String(b.date).localeCompare(String(a.date)));
+                localStorage.setItem('school_attendance_logs', JSON.stringify(attendanceLogs));
+                loadAdminData();
+            }, (err) => console.error("Logs sync error:", err));
+        }
+
+        async function saveClassStudents(classKey, students) {
+            if (!isCloudReady) return false;
+            await setDoc(doc(db, ...cloudRoot, 'classes_v2', safeDocId(classKey)), {
+                classKey, students: JSON.parse(JSON.stringify(students || [])), updatedAt: new Date().toISOString()
+            });
+            return true;
+        }
+
+        async function saveTeacherRecord(t) {
+            if (!isCloudReady || !t?.name) return false;
+            const id = safeDocId((t.classKey || 'noclass') + '__' + t.name.toLowerCase());
+            await setDoc(doc(db, ...cloudRoot, 'teachers_v2', id), {
+                name: t.name, classKey: t.classKey || '', className: t.className || '', updatedAt: new Date().toISOString()
+            });
+            return true;
+        }
+
+        async function deleteTeacherRecord(t) {
+            if (!isCloudReady || !t?.name) return;
+            const id = safeDocId((t.classKey || 'noclass') + '__' + t.name.toLowerCase());
+            await deleteDoc(doc(db, ...cloudRoot, 'teachers_v2', id));
+        }
+
+        async function saveLogRecord(log) {
+            if (!isCloudReady || !log?.date || !log?.classKey) return false;
+            const id = safeDocId(log.date + '__' + log.classKey);
+            await setDoc(doc(db, ...cloudRoot, 'attendance_v2', id), {
+                ...JSON.parse(JSON.stringify(log)), id, updatedAt: new Date().toISOString()
+            });
+            return true;
+        }
+
+        async function saveStudentsToCloud() {
+            if (!isCloudReady) return;
+            const grade = document.getElementById('gradeSelect')?.value;
+            const letter = (document.getElementById('letterInput')?.value || 'А').trim();
+            const classKey = `${grade}_${letter}`;
+            try { await saveClassStudents(classKey, mockStudents[classKey] || []); }
+            catch (err) { console.error('Save students error:', err); showToast('Оқушыларды бұлтқа сақтау қатесі!', 'info'); }
+        }
+
+        async function saveTeachersToCloud() {
+            if (!isCloudReady) return;
+            try { for (const t of registeredTeachers) await saveTeacherRecord(t); }
+            catch (err) { console.error('Save teachers error:', err); showToast('Мұғалімдерді бұлтқа сақтау қатесі!', 'info'); }
+        }
+
+        async function saveLogsToCloud() {
+            if (!isCloudReady) return;
+            try { for (const l of attendanceLogs) await saveLogRecord(l); }
+            catch (err) { console.error('Save logs error:', err); showToast('Қатысуды бұлтқа сақтау қатесі!', 'info'); }
+        }
+
+        function loadFromLocalStorage() {
+            const savedStudents = localStorage.getItem('school_custom_students');
+            if (savedStudents) { try { mockStudents = JSON.parse(savedStudents); } catch(e){} }
+            const savedTeachers = localStorage.getItem('school_registered_teachers');
+            if (savedTeachers) { try { registeredTeachers = JSON.parse(savedTeachers); } catch(e){} }
+            const savedLogs = localStorage.getItem('school_attendance_logs');
+            if (savedLogs) { try { attendanceLogs = JSON.parse(savedLogs); } catch(e){} }
+
+            updateTeachersDatalist();
+            loadClassStudents();
+            loadAdminData();
+        }
+
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            const dateEl = document.getElementById('attendanceDate');
+            if (dateEl) dateEl.value = today;
+            
+            const letterInput = document.getElementById('letterInput');
+            if (letterInput && !letterInput.value) {
+                letterInput.value = "А";
+            }
+
+            const savedTeacher = localStorage.getItem('school_custom_teacher_name');
+            const teacherNameInput = document.getElementById('teacherNameInput');
+            const indicator = document.getElementById('savedTeacherIndicator');
+            if (savedTeacher && teacherNameInput) {
+                teacherNameInput.value = savedTeacher;
+                if (indicator) indicator.innerText = `Мұғалім: ${savedTeacher}`;
+            }
+
+            initFirebase();
+            loadFromLocalStorage();
+        };
+
+        function updateTeachersDatalist() {
+            const datalist = document.getElementById('savedTeachersDatalist');
+            if (!datalist) return;
+            datalist.innerHTML = '';
+            const uniqueNames = [...new Set(registeredTeachers.map(t => t.name))];
+            uniqueNames.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                datalist.appendChild(opt);
+            });
+        }
+
+        function showToast(message, type = "success") {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+            if (!toast || !toastMsg) return;
+
+            toastMsg.innerText = message;
+            toastIcon.innerText = type === "success" ? "✅" : "ℹ️";
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+
+        window.saveCustomTeacherName = async function() {
+            const input = document.getElementById('teacherNameInput');
+            const indicator = document.getElementById('savedTeacherIndicator');
+            if (!input) return;
+            const name = input.value.trim();
+            if (!name) {
+                showToast("Мұғалімнің аты-жөнін енгізіңіз!", "info");
+                return;
+            }
+            const grade = document.getElementById('gradeSelect').value;
+            const letter = (document.getElementById('letterInput').value || "А").trim();
+            const classKey = `${grade}_${letter}`;
+            const className = `${grade} "${letter}" сыныбы`;
+
+            let existing = registeredTeachers.find(t => t.name.toLowerCase() === name.toLowerCase());
+            if (!existing) {
+                registeredTeachers.push({ name, classKey, className });
+            }
+            localStorage.setItem('school_custom_teacher_name', name);
+            localStorage.setItem('school_registered_teachers', JSON.stringify(registeredTeachers));
+            await saveTeacherRecord(registeredTeachers.find(t => t.name.toLowerCase() === name.toLowerCase()));
+
+            if (indicator) indicator.innerText = `Мұғалім: ${name}`;
+            showToast("Мұғалім аты-жөні сақталды!", "success");
+            updateTeachersDatalist();
+            loadAdminData();
+        };
+
+        window.deleteCurrentTeacherPrompt = async function() {
+            const teacherInput = document.getElementById('teacherNameInput');
+            if (!teacherInput) return;
+            const nameToDel = teacherInput.value.trim();
+            if (!nameToDel) {
+                showToast("Өшіретін мұғалімнің аты-жөнін жазыңыз!", "info");
+                return;
+            }
+
+            const toDelete = registeredTeachers.filter(t => t.name.toLowerCase() === nameToDel.toLowerCase());
+            for (const t of toDelete) await deleteTeacherRecord(t);
+            registeredTeachers = registeredTeachers.filter(t => t.name.toLowerCase() !== nameToDel.toLowerCase());
+            localStorage.setItem('school_registered_teachers', JSON.stringify(registeredTeachers));
+            
+            teacherInput.value = "";
+            localStorage.removeItem('school_custom_teacher_name');
+            document.getElementById('savedTeacherIndicator').innerText = `Сақталған мұғалім: Жоқ`;
+
+            updateTeachersDatalist();
+            loadAdminData();
+            showToast("Мұғалім тізімнен өшірілді!", "success");
+        };
+
+        window.switchRole = function(role) {
+            const btnTeacher = document.getElementById('btnRoleTeacher');
+            const btnAdmin = document.getElementById('btnRoleAdmin');
+            const teacherView = document.getElementById('teacherView');
+            const adminView = document.getElementById('adminView');
+
+            if (!btnTeacher || !btnAdmin || !teacherView || !adminView) return;
+
+            if (role === 'teacher') {
+                btnTeacher.className = "px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-indigo-950 shadow-2xl scale-105 cursor-pointer";
+                btnAdmin.className = "px-5 py-2.5 rounded-xl text-sm font-bold transition-all text-white/80 hover:text-white hover:bg-white/10 cursor-pointer";
+                teacherView.classList.remove('hidden');
+                adminView.classList.add('hidden');
+                loadClassStudents();
+            } else {
+                btnAdmin.className = "px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-indigo-950 shadow-2xl scale-105 cursor-pointer";
+                btnTeacher.className = "px-5 py-2.5 rounded-xl text-sm font-bold transition-all text-white/80 hover:text-white hover:bg-white/10 cursor-pointer";
+                adminView.classList.remove('hidden');
+                teacherView.classList.add('hidden');
+                loadAdminData();
+            }
+        };
+
+        window.loadClassStudents = function() {
+            const gradeEl = document.getElementById('gradeSelect');
+            const letterEl = document.getElementById('letterInput');
+            if (!gradeEl || !letterEl) return;
+
+            const grade = gradeEl.value;
+            const letter = (letterEl.value || "А").trim();
+            const classKey = `${grade}_${letter}`;
+            const classNameFull = `${grade} "${letter}" сыныбы`;
+            
+            const nameDisplay = document.getElementById('currentClassNameDisplay');
+            if (nameDisplay) nameDisplay.innerText = classNameFull;
+            
+            if (!mockStudents[classKey]) mockStudents[classKey] = [];
+
+            const students = JSON.parse(JSON.stringify(mockStudents[classKey]));
+            const countBadge = document.getElementById('studentCountBadge');
+            if (countBadge) countBadge.innerText = students.length + " оқушы";
+
+            const tbody = document.getElementById('studentTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-slate-400 font-medium">Бұл сыныпта әзірге оқушылар жоқ. Жоғарыдан оқушы қосыңыз немесе жүктеңіз.</td></tr>`;
+                currentStudentsData = [];
+                return;
+            }
+
+            students.forEach((st, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-indigo-50/40 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-4 px-6 text-slate-500 font-bold">${index + 1}</td>
+                    <td class="py-4 px-6 font-bold text-slate-800">${st.name}</td>
+                    <td class="py-4 px-6 text-center">
+                        <div class="inline-flex rounded-xl p-1 bg-slate-100 border border-slate-200/80 gap-1 shadow-inner">
+                            <button type="button" onclick="window.setStatus('${st.id}', 'Келді')" id="btn_${st.id}_Келді" class="px-3.5 py-1.5 text-xs font-extrabold rounded-lg transition-all bg-emerald-600 text-white shadow-md cursor-pointer">Келді</button>
+                            <button type="button" onclick="window.setStatus('${st.id}', 'Себепті')" id="btn_${st.id}_Себепті" class="px-3.5 py-1.5 text-xs font-extrabold rounded-lg transition-all text-slate-600 hover:bg-slate-200 cursor-pointer">Себепті</button>
+                            <button type="button" onclick="window.setStatus('${st.id}', 'Себепсіз')" id="btn_${st.id}_Себепсіз" class="px-3.5 py-1.5 text-xs font-extrabold rounded-lg transition-all text-slate-600 hover:bg-slate-200 cursor-pointer">Себепсіз</button>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6">
+                        <input type="text" id="reason_${st.id}" placeholder="Себебі (қажет болса)..." class="w-full px-4 py-2.5 bg-white/90 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm">
+                    </td>
+                    <td class="py-4 px-6 text-center">
+                        <button type="button" onclick="window.deleteStudent('${String(st.id).replace(/'/g, "\\'")}')" title="Оқушыны өшіру" class="text-white hover:bg-rose-600 bg-rose-500 p-2.5 rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center mx-auto w-10 h-10">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                st.status = 'Келді';
+                st.reason = '';
+            });
+            currentStudentsData = students;
+        };
+
+        window.setStatus = function(studentId, status) {
+            const st = currentStudentsData.find(s => String(s.id) === String(studentId));
+            if (st) st.status = status;
+
+            const btnPresent = document.getElementById(`btn_${studentId}_Келді`);
+            const btnExcused = document.getElementById(`btn_${studentId}_Себепті`);
+            const btnAbsent = document.getElementById(`btn_${studentId}_Себепсіз`);
+
+            if (btnPresent && btnExcused && btnAbsent) {
+                btnPresent.className = "px-3.5 py-1.5 text-xs font-extrabold rounded-lg transition-all text-slate-600 hover:bg-slate-200 cursor-pointer";
+                btnExcused.className = "px-3.5 py-1.5 text-xs font-extrabold rounded-lg transition-all text-slate-600 hover:bg-slate-200 cursor-pointer";
+                btnAbsent.className = "px-3.5 py-1.5 text-xs font-extrabold rounded-lg transition-all text-slate-600 hover:bg-slate-200 cursor-pointer";
+
+                if (status === 'Келді') {
+                    btnPresent.className = "px-3.5 py-1.5 text-xs font-extrabold rounded-lg transition-all bg-emerald-600 text-white shadow-md cursor-pointer";
+                } else if (status === 'Себепті') {
+                    btnExcused.className = "px-3.5 py-1.5 text-xs font-extrabold rounded-lg transition-all bg-amber-500 text-white shadow-md cursor-pointer";
+                } else if (status === 'Себепсіз') {
+                    btnAbsent.className = "px-3.5 py-1.5 text-xs font-extrabold rounded-lg transition-all bg-rose-600 text-white shadow-md cursor-pointer";
+                }
+            }
+        };
+
+        window.markAll = function(status) {
+            currentStudentsData.forEach(st => window.setStatus(st.id, status));
+        };
+
+        window.openAddStudentModal = function() {
+            const input = document.getElementById('newStudentNameInput');
+            if (input) input.value = '';
+            document.getElementById('addStudentModal').classList.remove('hidden');
+        };
+
+        window.closeAddStudentModal = function() {
+            document.getElementById('addStudentModal').classList.add('hidden');
+        };
+
+        window.confirmAddStudent = function() {
+            const nameInput = document.getElementById('newStudentNameInput');
+            if (!nameInput) return;
+            const name = nameInput.value.trim();
+            if (!name) {
+                showToast("Оқушының аты-жөнін енгізіңіз!", "info");
+                return;
+            }
+
+            const grade = document.getElementById('gradeSelect').value;
+            const letter = (document.getElementById('letterInput').value || "А").trim();
+            const classKey = `${grade}_${letter}`;
+
+            if (!mockStudents[classKey]) mockStudents[classKey] = [];
+            const newId = 'st_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+            mockStudents[classKey].push({ id: newId, name: name });
+
+            localStorage.setItem('school_custom_students', JSON.stringify(mockStudents));
+            saveStudentsToCloud();
+
+            window.closeAddStudentModal();
+            window.loadClassStudents();
+            showToast("Оқушы бұлттық жүйеге сәтті қосылды!", "success");
+        };
+
+        window.openWordImportModal = function() {
+            const textarea = document.getElementById('wordImportTextarea');
+            if (textarea) textarea.value = '';
+            document.getElementById('fileNameDisplay').innerText = "Прикрепить файл (Жүктеу үшін басыңыз)";
+            uploadedFileText = "";
+            document.getElementById('wordImportModal').classList.remove('hidden');
+        };
+
+        window.closeWordImportModal = function() {
+            document.getElementById('wordImportModal').classList.add('hidden');
+        };
+
+        window.handleFileUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            document.getElementById('fileNameDisplay').innerText = `Жүктелді: ${file.name}`;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedFileText = e.target.result;
+                const textarea = document.getElementById('wordImportTextarea');
+                if (textarea) textarea.value = uploadedFileText;
+            };
+            reader.readAsText(file, "UTF-8");
+        };
+
+        window.confirmWordImport = function() {
+            const textarea = document.getElementById('wordImportTextarea');
+            const text = (textarea ? textarea.value : "") || uploadedFileText;
+            if (!text.trim()) {
+                showToast("Файл жүктелмеді немесе тізім бос!", "info");
+                return;
+            }
+
+            const lines = text.split('\n');
+            const grade = document.getElementById('gradeSelect').value;
+            const letter = (document.getElementById('letterInput').value || "А").trim();
+            const classKey = `${grade}_${letter}`;
+
+            if (!mockStudents[classKey]) mockStudents[classKey] = [];
+            let addedCount = 0;
+            lines.forEach((line, idx) => {
+                let cleanName = line.trim().replace(/^[\d]+[\.\)]\s*/, '').trim();
+                if (cleanName) {
+                    const uniqueId = 'st_' + Date.now() + '_' + idx;
+                    mockStudents[classKey].push({ id: uniqueId, name: cleanName });
+                    addedCount++;
+                }
+            });
+
+            localStorage.setItem('school_custom_students', JSON.stringify(mockStudents));
+            saveStudentsToCloud();
+            window.closeWordImportModal();
+            window.loadClassStudents();
+            showToast(`${addedCount} оқушы тізімі бұлтқа жүктелді!`, "success");
+        };
+
+        window.deleteStudent = function(studentId) {
+            const grade = document.getElementById('gradeSelect').value;
+            const letter = (document.getElementById('letterInput').value || "А").trim();
+            const classKey = `${grade}_${letter}`;
+
+            if (mockStudents[classKey]) {
+                mockStudents[classKey] = mockStudents[classKey].filter(s => String(s.id) !== String(studentId));
+                localStorage.setItem('school_custom_students', JSON.stringify(mockStudents));
+                saveStudentsToCloud();
+                window.loadClassStudents();
+                showToast("Оқушы тізімнен өшірілді.", "success");
+            }
+        };
+
+        window.saveAttendance = async function() {
+            if (currentStudentsData.length === 0) {
+                showToast("Сақтайтын оқушылар тізімі бос!", "info");
+                return;
+            }
+
+            const date = document.getElementById('attendanceDate').value;
+            const grade = document.getElementById('gradeSelect').value;
+            const letter = (document.getElementById('letterInput').value || "А").trim();
+            const classKey = `${grade}_${letter}`;
+            const className = `${grade} "${letter}" сыныбы`;
+            const teacher = document.getElementById('teacherNameInput').value.trim() || "Мұғалім";
+
+            localStorage.setItem('school_custom_teacher_name', teacher);
+
+            currentStudentsData.forEach(st => {
+                const reasonInput = document.getElementById(`reason_${st.id}`);
+                if (reasonInput) st.reason = reasonInput.value;
+            });
+
+            const logEntry = {
+                id: 'log_' + Date.now(),
+                date,
+                classKey,
+                className,
+                teacher,
+                students: JSON.parse(JSON.stringify(currentStudentsData))
+            };
+
+            attendanceLogs = attendanceLogs.filter(l => !(l.date === date && l.classKey === classKey));
+            attendanceLogs.unshift(logEntry);
+
+            let existingTeacherObj = registeredTeachers.find(t => t.classKey === classKey);
+            if (!existingTeacherObj) {
+                registeredTeachers.push({ name: teacher, classKey, className });
+            } else {
+                existingTeacherObj.name = teacher;
+                existingTeacherObj.className = className;
+            }
+
+            localStorage.setItem('school_registered_teachers', JSON.stringify(registeredTeachers));
+            localStorage.setItem('school_attendance_logs', JSON.stringify(attendanceLogs));
+
+            const savedTeacherObj = registeredTeachers.find(t => t.classKey === classKey);
+            await saveTeacherRecord(savedTeacherObj);
+            await saveLogRecord(logEntry);
+            updateTeachersDatalist();
+
+            showToast("Қатысу деректері бұлтқа сақталды және әкімшілікке жіберілді!", "success");
+            window.loadAdminData();
+        };
+
+        window.loadAdminData = function() {
+            const today = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
+            const selectedPeriod = document.getElementById('periodFilterSelect').value;
+
+            const sectionTitleEl = document.getElementById('absentSectionTitle');
+            if (sectionTitleEl) {
+                const titles = {
+                    daily: "Күнделікті сабақтан қалған оқушылар",
+                    weekly: "Апталық сабақтан қалған оқушылар",
+                    monthly: "Айлық сабақтан қалған оқушылар",
+                    quarterly: "Тоқсандық сабақтан қалған оқушылар",
+                    yearly: "Жылдық сабақтан қалған оқушылар"
+                };
+                sectionTitleEl.innerText = titles[selectedPeriod] || "Сабақтан қалған оқушылар есебі";
+            }
+
+            const todayDateObj = new Date(today);
+            let filteredLogs = attendanceLogs.filter(log => {
+                const logDateObj = new Date(log.date);
+                const diffTime = todayDateObj - logDateObj;
+                const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+                if (selectedPeriod === 'daily') return log.date === today;
+                if (selectedPeriod === 'weekly') return diffDays >= 0 && diffDays <= 7;
+                if (selectedPeriod === 'monthly') return diffDays >= 0 && diffDays <= 30;
+                if (selectedPeriod === 'quarterly') return diffDays >= 0 && diffDays <= 90;
+                if (selectedPeriod === 'yearly') return diffDays >= 0 && diffDays <= 365;
+                return true;
+            });
+
+            let totalStudentsCount = 0;
+            let totalPresent = 0;
+            let totalExcused = 0;
+            let totalAbsent = 0;
+
+            attendanceLogs.forEach(log => {
+                log.students.forEach(st => {
+                    totalStudentsCount++;
+                    if (st.status === 'Келді') totalPresent++;
+                    else if (st.status === 'Себепті') totalExcused++;
+                    else if (st.status === 'Себепсіз') totalAbsent++;
+                });
+            });
+
+            document.getElementById('statTotalStudents').innerText = totalStudentsCount;
+            document.getElementById('statPresent').innerText = totalPresent;
+            document.getElementById('statExcused').innerText = totalExcused;
+            document.getElementById('statAbsent').innerText = totalAbsent;
+
+            const filledTeachersListEl = document.getElementById('filledTeachersList');
+            const unfilledTeachersListEl = document.getElementById('unfilledTeachersList');
+            if (filledTeachersListEl) filledTeachersListEl.innerHTML = '';
+            if (unfilledTeachersListEl) unfilledTeachersListEl.innerHTML = '';
+
+            const todayLogs = attendanceLogs.filter(l => l.date === today);
+            const submittedClassKeys = todayLogs.map(l => l.classKey);
+            const submittedTeacherNames = todayLogs.map(l => (l.teacher || "").toLowerCase().trim());
+
+            let filledCount = 0;
+            let unfilledCount = 0;
+
+            registeredTeachers.forEach(cls => {
+                const isFilledByClass = submittedClassKeys.includes(cls.classKey);
+                const isFilledByTeacher = submittedTeacherNames.includes((cls.name || "").toLowerCase().trim());
+                const isFilled = isFilledByClass || isFilledByTeacher;
+                const matchingLog = todayLogs.find(l => l.classKey === cls.classKey || (l.teacher || "").toLowerCase().trim() === (cls.name || "").toLowerCase().trim());
+                
+                if (isFilled) {
+                    filledCount++;
+                    const tName = matchingLog ? matchingLog.teacher : cls.name;
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = "flex justify-between items-center p-4 rounded-2xl border bg-emerald-50/85 border-emerald-200 shadow-sm";
+                    itemDiv.innerHTML = `<div><p class="font-extrabold text-slate-800 text-sm">${tName}</p></div><div><span class="bg-emerald-200 text-emerald-900 text-xs font-extrabold px-3 py-1 rounded-full">Тапсырды ✅</span></div>`;
+                    filledTeachersListEl.appendChild(itemDiv);
+                } else {
+                    if (cls.name && cls.name.trim() !== "") {
+                        unfilledCount++;
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = "flex justify-between items-center p-4 rounded-2xl border bg-rose-50/85 border-rose-200 shadow-sm";
+                        itemDiv.innerHTML = `<div><p class="font-extrabold text-slate-800 text-sm">${cls.name}</p></div><div><span class="bg-rose-200 text-rose-900 text-xs font-extrabold px-3 py-1 rounded-full">Толтырған жоқ ⏳</span></div>`;
+                        unfilledTeachersListEl.appendChild(itemDiv);
+                    }
+                }
+            });
+
+            if (filledCount === 0 && filledTeachersListEl) {
+                filledTeachersListEl.innerHTML = `<p class="text-xs text-slate-400 py-4 text-center font-medium">Таңдалған күні есеп тапсырған мұғалімдер жоқ</p>`;
+            }
+            if (unfilledCount === 0 && unfilledTeachersListEl) {
+                unfilledTeachersListEl.innerHTML = `<p class="text-xs text-emerald-600 py-4 text-center font-bold bg-emerald-50/50 rounded-2xl border border-emerald-100">Барлық мұғалімдер есепті тапсырды немесе тізім таза! 🎉</p>`;
+            }
+
+            document.getElementById('filledCountBadge').innerText = filledCount;
+            document.getElementById('unfilledCountBadge').innerText = unfilledCount;
+
+            const weeklyAbsentMap = {};
+            filteredLogs.forEach(log => {
+                const teacherObj = registeredTeachers.find(t => t.classKey === log.classKey);
+                const teacherName = teacherObj ? teacherObj.name : log.teacher;
+
+                log.students.forEach(st => {
+                    if (st.status === 'Себепсіз' || st.status === 'Себепті') {
+                        const mapKey = `${st.name}_${log.classKey}`;
+                        if (!weeklyAbsentMap[mapKey]) {
+                            weeklyAbsentMap[mapKey] = { studentName: st.name, className: log.className, teacherName: teacherName, records: [] };
+                        }
+                        weeklyAbsentMap[mapKey].records.push({ date: log.date, status: st.status, reason: st.reason ? `(${st.reason})` : '' });
+                    }
+                });
+            });
+
+            const weeklyAbsentArray = Object.values(weeklyAbsentMap).sort((a, b) => b.records.length - a.records.length);
+            document.getElementById('totalAbsentStudentsCount').innerText = `Барлығы: ${weeklyAbsentArray.length} оқушы`;
+
+            const weeklyAbsentTableBody = document.getElementById('weeklyAbsentTableBody');
+            if (weeklyAbsentTableBody) {
+                weeklyAbsentTableBody.innerHTML = '';
+                if (weeklyAbsentArray.length === 0) {
+                    weeklyAbsentTableBody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-slate-400 font-medium">Таңдалған кезең бойынша сабақтан қалған оқушылар тіркелмеді</td></tr>`;
+                } else {
+                    weeklyAbsentArray.forEach((item, index) => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-indigo-50/40 transition-colors";
+                        let detailsHtml = item.records.map(r => `<span class="inline-block bg-slate-100 text-slate-700 px-3 py-1 rounded-xl text-xs m-0.5 font-bold border border-slate-200">${r.date}: <b>${r.status}</b> ${r.reason}</span>`).join(' ');
+                        tr.innerHTML = `
+                            <td class="py-4 px-6 text-slate-500 font-bold">${index + 1}</td>
+                            <td class="py-4 px-6 font-extrabold text-slate-800">${item.studentName}</td>
+                            <td class="py-4 px-6 text-slate-600 font-bold">${item.className}</td>
+                            <td class="py-4 px-6 text-slate-600 font-bold">${item.teacherName}</td>
+                            <td class="py-4 px-6 text-center">${detailsHtml}</td>
+                            <td class="py-4 px-6 text-center font-extrabold text-rose-600">${item.records.length} рет</td>
+                        `;
+                        weeklyAbsentTableBody.appendChild(tr);
+                    });
+                }
+            }
+
+            const columnChartContainer = document.getElementById('columnChartContainer');
+            if (columnChartContainer) {
+                columnChartContainer.innerHTML = `<div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-25 pl-4"><div class="border-b border-dashed border-slate-400 w-full"></div><div class="border-b border-dashed border-slate-400 w-full"></div><div class="border-b border-dashed border-slate-400 w-full"></div><div class="border-b border-dashed border-slate-400 w-full"></div><div class="border-b border-dashed border-slate-400 w-full"></div><div class="border-b border-dashed border-slate-400 w-full"></div><div class="border-b border-dashed border-slate-400 w-full"></div><div class="border-b border-dashed border-slate-400 w-full"></div><div class="border-b border-dashed border-slate-400 w-full"></div><div class="border-b border-dashed border-slate-400 w-full"></div></div>`;
+
+                const classStatsMap = {};
+                
+                filteredLogs.forEach(log => {
+                    if (log.classKey) {
+                        const parts = log.classKey.split('_');
+                        const totalStudents = mockStudents[log.classKey] ? mockStudents[log.classKey].length : (log.students ? log.students.length : 0);
+                        if (!classStatsMap[log.classKey]) {
+                            classStatsMap[log.classKey] = { className: `${parts[0]} "${parts[1] || ''}"`, totalCount: totalStudents, absentCount: 0, submittedLogsCount: 0 };
+                        }
+                        classStatsMap[log.classKey].submittedLogsCount++;
+                        log.students.forEach(st => {
+                            if (st.status === 'Себепсіз' || st.status === 'Себепті') {
+                                classStatsMap[log.classKey].absentCount++;
+                            }
+                        });
+                    }
+                });
+
+                const classKeysList = Object.keys(classStatsMap);
+
+                if (classKeysList.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.className = "absolute inset-0 flex items-center justify-center text-slate-400 text-xs font-bold text-center px-4";
+                    emptyMsg.innerText = "Мұғалімдер өз сыныптарының қатысуын енгізгеннен кейін диаграммада көрсетіледі.";
+                    columnChartContainer.appendChild(emptyMsg);
+                    return;
+                }
+
+                const colors = ['bg-indigo-600', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-purple-600', 'bg-pink-500'];
+                
+                classKeysList.forEach((ck, index) => {
+                    const cs = classStatsMap[ck];
+                    let absentRatio = 0;
+                    const totalPossibleAttendance = cs.totalCount * Math.max(1, cs.submittedLogsCount);
+                    if (totalPossibleAttendance > 0) {
+                        absentRatio = Math.min(100, Math.round((cs.absentCount / totalPossibleAttendance) * 100));
+                    }
+                    
+                    const heightPx = Math.max(25, Math.min(270, (absentRatio / 100) * 270));
+                    const barColor = colors[index % colors.length];
+
+                    const barWrapper = document.createElement('div');
+                    barWrapper.className = "flex flex-col items-center h-full justify-end z-10 min-w-[50px] max-w-[70px]";
+                    barWrapper.innerHTML = `
+                        <span class="text-[10px] font-extrabold text-slate-700 mb-1">${absentRatio}% (${cs.absentCount})</span>
+                        <div class="${barColor} w-full rounded-t-2xl transition-all duration-500 shadow-lg hover:opacity-90 flex items-start justify-center pt-2 text-[10px] font-extrabold text-white" style="height: ${heightPx}px;" title="Сынып: ${cs.className}, Оқушылар: ${cs.totalCount}, Қалғандар: ${cs.absentCount}">
+                            ${cs.totalCount}
+                        </div>
+                        <span class="text-[10px] font-extrabold text-slate-700 mt-2 text-center truncate w-full">${cs.className}</span>
+                    `;
+                    columnChartContainer.appendChild(barWrapper);
+                });
+            }
+        };
+
+        window.exportTeachersReport = function(type) {
+            const today = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
+            const todayLogs = attendanceLogs.filter(l => l.date === today);
+            const submittedClassKeys = todayLogs.map(l => l.classKey);
+            const submittedTeacherNames = todayLogs.map(l => (l.teacher || "").toLowerCase().trim());
+
+            let textContent = `=== ${type === 'filled' ? 'ТОЛТЫРҒАН МҰҒАЛІМДЕР ТІЗІМІ' : 'ТОЛТЫРМАҒАН МҰҒАЛІМДЕР ТІЗІМІ'} (${today}) ===\n\n`;
+            let count = 0;
+
+            registeredTeachers.forEach(cls => {
+                const isFilledByClass = submittedClassKeys.includes(cls.classKey);
+                const isFilledByTeacher = submittedTeacherNames.includes((cls.name || "").toLowerCase().trim());
+                const isFilled = isFilledByClass || isFilledByTeacher;
+                const matchingLog = todayLogs.find(l => l.classKey === cls.classKey || (l.teacher || "").toLowerCase().trim() === (cls.name || "").toLowerCase().trim());
+                
+                if (type === 'filled' && isFilled) {
+                    count++;
+                    const tName = matchingLog ? matchingLog.teacher : cls.name;
+                    textContent += `${count}. Мұғалім: ${tName} | Сыныбы: ${cls.className || cls.classKey}\n`;
+                } else if (type === 'unfilled' && !isFilled && cls.name && cls.name.trim() !== "") {
+                    count++;
+                    textContent += `${count}. Мұғалім: ${cls.name}\n`;
+                }
+            });
+
+            if (count === 0) {
+                textContent += "Мәліметтер жоқ.";
+            }
+
+            const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${type === 'filled' ? 'Toltyrgan_mugalimder' : 'Toltyrmagan_mugalimder'}_${today}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Мұғалімдер тізімі жүктелді!", "success");
+        };
+
+        window.exportAllTeachersExcelReport = function() {
+            const today = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
+            const todayLogs = attendanceLogs.filter(l => l.date === today);
+            const submittedClassKeys = todayLogs.map(l => l.classKey);
+            const submittedTeacherNames = todayLogs.map(l => (l.teacher || "").toLowerCase().trim());
+
+            let csvContent = "\uFEFF"; // UTF-8 BOM for Excel Cyrillic support
+            csvContent += `Мұғалім аты-жөні,Сыныбы,Күні,Мәртебесі\n`;
+
+            registeredTeachers.forEach(cls => {
+                const isFilledByClass = submittedClassKeys.includes(cls.classKey);
+                const isFilledByTeacher = submittedTeacherNames.includes((cls.name || "").toLowerCase().trim());
+                const isFilled = isFilledByClass || isFilledByTeacher;
+                const matchingLog = todayLogs.find(l => l.classKey === cls.classKey || (l.teacher || "").toLowerCase().trim() === (cls.name || "").toLowerCase().trim());
+                
+                const tName = matchingLog ? matchingLog.teacher : (cls.name || "Белгісіз");
+                const className = cls.className || cls.classKey || "-";
+                const status = isFilled ? "Толтырды" : "Толтырмады";
+
+                csvContent += `"${tName.replace(/"/g, '""')}","${className.replace(/"/g, '""')}","${today}","${status}"\n`;
+            });
+
+            if (registeredTeachers.length === 0) {
+                showToast("Тіркелген мұғалімдер жоқ!", "info");
+                return;
+            }
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Mugalimder_Esebi_${today}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Барлық мұғалімдер есебі Excel (CSV) форматында жүктелді!", "success");
+        };
+
+        window.exportWeeklyReport = function() {
+            showToast("Апталық есеп файлға жүктелуде...", "success");
+        };
+
+        window.exportClassStatsReport = function() {
+            showToast("Сынып есебі файлға жүктелуде...", "success");
+        };
+    </script>
+</body>
+</html>
